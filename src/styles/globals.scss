@@ -4,4 +4,15 @@
   padding: 0;
 }
 
-// TODO
+html, body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background);
+}
+
+:root {
+  --background: #1A1D23;
+  --info: #BBBBBB;
+  --heading: #F8F8F8;
+  --body: #D7D7D7;
+  --highlight: #FF57B2;
+}
