@@ -4,7 +4,7 @@
 }
 
 .post {
-  h1 {
+  a {
     color: var(--heading);
     font-size: 1.75rem;
     font-weight: bold;
@@ -22,7 +22,7 @@
     margin-top: 1.5rem;
     color: var(--info);
 
-    span {
+    span, time {
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -35,7 +35,7 @@
       }
     }
 
-    span:not(:last-child) {
+    time:not(:last-child), span:not(:last-child) {
       margin-right: 0.5rem;
     }
   }

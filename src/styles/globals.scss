@@ -16,3 +16,11 @@ html, body {
   --body: #D7D7D7;
   --highlight: #FF57B2;
 }
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  cursor: pointer;
+}
