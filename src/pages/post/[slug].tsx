@@ -1,6 +1,8 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { Head } from 'next/document';
+import { useRouter } from 'next/router';
 import { RichText } from 'prismic-dom';
 import {
   AiOutlineCalendar,
@@ -35,6 +37,12 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <p>Carregando...</p>;
+  }
+
   return (
     <>
       <div className={styles.cover}>
@@ -86,7 +94,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const post = {
     first_publication_date: format(
       new Date(response.last_publication_date),
-      'PPP',
+      'PP',
       {
         locale: ptBR,
       }
@@ -97,14 +105,11 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         url: response.data.banner.url,
       },
       author: RichText.asText(response.data.author),
-      content: response.data.content.reduce(item => ({
-        heading: RichText.asHtml(item.heading),
-        body: { text: RichText.asHtml(item.body) },
-      })),
+      content: RichText.asText(response.data.content),
     },
   };
 
-  console.log(post.data.content);
+  console.log(post);
 
   return {
     props: {
