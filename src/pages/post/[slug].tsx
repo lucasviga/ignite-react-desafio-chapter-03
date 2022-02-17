@@ -1,4 +1,12 @@
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { RichText } from 'prismic-dom';
+import {
+  AiOutlineCalendar,
+  AiOutlineUser,
+  AiOutlineClockCircle,
+} from 'react-icons/ai';
 
 import { getPrismicClient } from '../../services/prismic';
 
@@ -26,51 +34,81 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post(): JSX.Element {
+export default function Post({ post }: PostProps): JSX.Element {
   return (
     <>
       <div className={styles.cover}>
-        <img src="https://images.unsplash.com/photo-1617042375876-a13e36732a04?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" />
+        <img src={post.data.banner.url} alt={post.data.title} />
       </div>
 
       <main className={styles.container}>
         <article className={styles.post}>
-          <h1>How to use React hooks</h1>
+          <h1>{post.data.title}</h1>
           <div className={styles.postInfo}>
-            <time>15 Mar 2022</time>
-            <span>Lucas Viga</span>
-            <time>4 min</time>
+            <time>
+              <AiOutlineCalendar /> {post.first_publication_date}
+            </time>
+            <span>
+              <AiOutlineUser /> {post.data.author}
+            </span>
+            <time>
+              <AiOutlineClockCircle />4 min
+            </time>
           </div>
 
-          <div className={styles.postContent}>
-            <p>
-              O tempo estimado de leitura deve ser calculado manualmente por
-              você. Mas não se assuste, a ideia é simples. Basicamente você deve
-              calcular todas as palavras dentro do texto do seu post, dividir
-              pela média de palavras que um ser humano lê por minuto e
-              arredondar para cima. Para esse desafio, utilize que o ser humano
-              leia, em média, 200 palavras por minuto. Então se o seu texto
-              possuir 805 palavras, você irá dividir por 200 e arredondar o
-              resultado para cima, chegando assim no valor de 5 minutos
-              estimados para leitura do post.
-            </p>
-          </div>
+          {/* <div className={styles.postContent} />                     */}
         </article>
       </main>
     </>
   );
 }
 
-// export const getStaticPaths = async () => {
-//   const prismic = getPrismicClient();
-//   const posts = await prismic.query(TODO);
+export const getStaticPaths: GetStaticPaths = async () => {
+  const prismic = getPrismicClient();
+  const posts = await prismic.query('');
 
-//   // TODO
-// };
+  const paths = posts.results.map(post => ({
+    params: { slug: post.uid },
+  }));
 
-// export const getStaticProps = async context => {
-//   const prismic = getPrismicClient();
-//   const response = await prismic.getByUID(TODO);
+  return {
+    paths,
+    fallback: true,
+  };
+};
 
-//   // TODO
-// };
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const { slug } = params;
+
+  const prismic = getPrismicClient();
+  const response = await prismic.getByUID('posts', String(slug), {});
+
+  const post = {
+    first_publication_date: format(
+      new Date(response.last_publication_date),
+      'PPP',
+      {
+        locale: ptBR,
+      }
+    ),
+    data: {
+      title: RichText.asText(response.data.title),
+      banner: {
+        url: response.data.banner.url,
+      },
+      author: RichText.asText(response.data.author),
+      content: response.data.content.reduce(item => ({
+        heading: RichText.asHtml(item.heading),
+        body: { text: RichText.asHtml(item.body) },
+      })),
+    },
+  };
+
+  console.log(post.data.content);
+
+  return {
+    props: {
+      post,
+    },
+  };
+};
